@@ -160,6 +160,162 @@ from test
           </code></pre>
         </section>
 
+        <section>
+          <h2>Jugando con PostGIS</h2>
+          <h3>Creamos un punto dinámicamente</h3>
+          <pre><code data-trim contenteditable>
+select
+1 as cartodb_id,
+'Obelisco' as nombre,
+ST_Transform(
+  ST_GeomFromText(
+    'POINT(-58.38145 -34.60368)'
+    , 4326
+  )
+  , 3857
+) as the_geom_webmercator
+          </code></pre>
+        </section>
+
+
+        <section>
+          <h2>Jugando con PostGIS</h2>
+          <h3>Creamos un polígono dinámicamente</h3>
+          <pre><code data-trim contenteditable>
+select
+1 as cartodb_id,
+'Mi poligono' as nombre,
+ST_Transform(
+  ST_GeomFromText(
+    'POLYGON((
+      -58.38145 -34.60368,
+      -58.48145 -34.60368,
+      -58.48145 -34.70368,
+      -58.38145 -34.60368
+    ))'
+    , 4326
+  )
+  , 3857
+) as the_geom_webmercator
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Magia negra con PostGIS</h2>
+          <h3>Los 150 teatros más cercanos al obelisco</h3>
+          <pre><code data-trim contenteditable>
+select
+  *
+from
+  teatros
+order by
+  ST_Distance(
+    the_geom,
+    ST_GeomFromText(
+      'POINT(-58.38145 -34.60368)'
+      , 4326
+    )
+  )
+limit 150
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Magia negra con PostGIS</h2>
+          <h3>250 metros a la redonda del obelisco</h3>
+          <pre><code data-trim contenteditable>
+select
+1 as cartodb_id,
+ST_Buffer(
+  ST_Transform(
+    ST_GeomFromText(
+      'POINT(-58.38145 -34.60368)'
+      , 4326
+    )
+    , 3857
+  )
+  , 500
+) as the_geom_webmercator
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Magia negra con PostGIS</h2>
+          <h3>Los teatros a 250 metros del obelisco</h3>
+          <pre><code data-trim contenteditable>
+select
+  *
+from
+  teatros
+where
+ST_Within(
+  the_geom_webmercator,
+  ST_Buffer(
+    ST_Transform(
+      ST_GeomFromText(
+        'POINT(-58.38145 -34.60368)'
+        , 4326
+      )
+      , 3857
+    )
+    , 500
+  )
+)
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Magia negra con PostGIS</h2>
+          <h3>Combinando tablas</h3>
+          <h3>Los teatros según nuestras zonas</h3>
+          <pre><code data-trim contenteditable>
+select
+  *,
+  (
+    select count(*)
+    from teatros
+    where ST_Within(teatros.the_geom, caba.the_geom)
+  ) as teatros
+
+from caba
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Magia negra con PostGIS</h2>
+          <h3>Una consulta completa via web service</h3>
+          <pre><code data-trim contenteditable>
+select
+  tipo, subtipo, nombre, direccion, telefono, email, web, lat, lon
+from
+  cultura
+where
+  (
+    ST_Within(
+      the_geom,
+      ST_Envelope(
+        ST_GeomFromText(
+          'LINESTRING(
+            -58.89147971858635 -34.340247534509786,
+            -58.11909462223395 -34.87825876285646
+          )', 4326
+        )
+      )
+    )
+  ) and (
+    (lower(subtipo) in ('salas de cine', 'espacios incaa', 'salas teatrales'))
+  )
+          </code></pre>
+        </section>
+
+
+        <section>
+          <h2>¿Preguntas?</h2>
+        </section>
+
+        <section>
+          <h1>FIN</h1>
+        </section>
 
         <section>
           <h2>Heads Up</h2>
