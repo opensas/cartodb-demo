@@ -1,0 +1,153 @@
+getting started
+
+http://developers.cartodb.com/documentation/using-cartodb.html
+
+
+projections
+
+Defines a full coordinate reference system, providing spatial meaning to otherwise meaningless pairs of numbers
+
+https://en.wikipedia.org/wiki/SRID
+Spatial Reference System Identifier (SRID)
+European Petroleum Survey Group (EPSG)
+
+
+World Geodetic System
+The latest revision is WGS 84 (aka WGS 1984, EPSG:4326), established in 1984 and last revised in 2004
+
+
+
+
+http://developers.cartodb.com/tutorials/projections.html
+
+http://developers.cartodb.com/documentation/sql-api.html
+
+All data returned from the_geom column is in WGS 83 (EPSG:4326).
+
+CartoDB also stores a second geometry column, the_geom_webmercator. We use this internally to build your map tiles as fast as we can. In the user-interface it is hidden, but it is visible and available for use. In this column we store a reprojected version of all your geometries using Web Mercator (EPSG:3857).
+
+http://wiki.openstreetmap.org/wiki/EPSG:3857
+EPSG:3857 is a Spherical Mercator projection coordinate system popularized by web services such as Google and later OpenStreetMap.
+
+
+paises y provincias de argentina (sudamerica)
+http://www.aeroterra.com/d-argentinagral.htm
+
+SELECT
+*,
+round(poblacion / sup) as densidad
+FROM argentina
+
+
+
+
+select
+1 as cartodb_id,
+ST_Transform(
+ST_GeomFromText(
+  'LINESTRING(
+    -58.619927160134914 -34.49019904491863,
+    -58.233748682150235 -34.759155413421624
+  )', 4326
+), 3857)
+as the_geom_webmercator
+
+--
+
+http://www.postgis.org/docs/ST_SRID.html
+
+
+
+select * from spatial_ref_sys
+where srid = 4326
+
+http://www.postgis.org/docs/ST_GeomFromText.html
+
+
+
+
+marcar un punto en openstreetmaps (el obelisco)
+extraer coordenadas
+
+(el obelisco y un punto mas)
+select
+1 as cartodb_id,
+ST_Transform(
+  ST_GeomFromText(
+    'POINT(-58.38185 -34.60374)', 4326
+  ),
+  3857
+) as the_geom_webmercator
+union
+select
+2 as cartodb_id,
+ST_Transform(
+  ST_GeomFromText(
+    'POINT(-59.38185 -34.60374)', 4326
+  ),
+  3857
+) as the_geom_webmercator
+
+SELECT
+1 as cartodb_id,
+ST_AsText(
+ST_Transform(
+ST_GeomFromText(
+  'POINT(-58.38185 -34.60374)', 4326
+), 3857)
+)
+as the_geom_webmercator
+
+SELECT
+1 as cartodb_id,
+ST_GeomFromText(
+  'POINT(-6508511.10223579 -4110477.68822197)'
+)
+as the_geom_webmercator
+
+SELECT
+1 as cartodb_id,
+ST_AsText(
+ST_Transform(
+ST_GeomFromText(
+  'POINT(-58.46695 -34.606085)', 4326
+), 3857)
+)
+as the_geom_webmercator
+
+
+ST_GeomFromGeoJSON no acepta el segundo parametro con el SRID
+asi que hay que usar ST_SetSRID
+
+SELECT
+1 as cartodb_id,
+ST_Transform(
+  ST_SetSRID(
+    ST_GeomFromGeoJSON(
+      '{"type":"Point","coordinates":[-58.46695, -34.606085]}'
+    )
+  , 4326)
+, 3857)
+as the_geom_webmercator
+
+
+dibujar una forma en geojson.io
+http://geojson.io
+
+--
+
+demo combining datasets:
+SELECT
+cartodb_id,
+nombre,
+the_geom,
+the_geom_webmercator,
+(
+  select count(*) from my_contacts where
+  ST_Contains(
+    zonas.the_geom,
+    my_contacts.the_geom
+  )
+) as contacts
+from zonas
+

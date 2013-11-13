@@ -1,0 +1,203 @@
+Agenda
+
+1 importar datos
+2 crear y publicar visualizaciones
+3 procesarlos - geocodificar
+4 usar postGIS Sql
+5 crear tu mapa
+5 usar la api
+
+--
+
+http://cartodb.com/
+
+importar datos de pais de sud america
+
+https://duckduckgo.com/?q=argentina+shapefile+paises+de+sudamerica
+
+http://www.aeroterra.com/d-argentinagral.htm
+
+- importar
+- mostrar tabla
+- cambiar nombre columna sup
+- mostrar mapa
+- mapa de categoria por pais
+- choropleth por poblacion
+- choropleth por densidad
+
+select
+  *,
+  round(poblacion / sup) as densidad
+from
+  sudamerica
+where
+  pais = 'Argentina'
+
+- compartir mapa
+
+--
+
+geocode
+
+teatros.csv
+
+sql
+
+SELECT * FROM teatros
+where nombre ilike '%colon%'
+
+Aprendiendo PostGIS
+
+http://postgis.net/
+
+Proyecciones
+
+--
+
+buscamos el obelisco en OpenStreetMap
+
+insert into test( the_geom )
+values (
+  ST_GeomFromText(
+    'POINT(-58.38145 -34.60368)'
+    , 4326
+  )
+)
+
+select *,
+ST_SRID(the_geom)
+  as geom_srid,
+ST_SRID(the_geom_webmercator)
+  as geom_webmercator_srid
+from test
+
+
+
+vemos el campo
+
+SELECT
+1 as cartodb_id,
+'Obelisco' as nombre,
+ST_Transform(
+  ST_GeomFromText(
+    'POINT(-58.38145 -34.60368)'
+    , 4326
+  )
+  , 3857
+) as the_geom_webmercator
+
+
+SELECT
+1 as cartodb_id,
+'Obelisco' as nombre,
+ST_Transform(
+  ST_GeomFromText(
+    'POLYGON((
+      -58.38145 -34.60368,
+      -58.48145 -34.60368,
+      -58.48145 -34.70368,
+      -58.38145 -34.60368
+    ))'
+    , 4326
+  )
+  , 3857
+) as the_geom_webmercator
+
+http://workshops.boundlessgeo.com/postgis-intro/knn.html
+
+los 150 teatros más cercanos al obelisco
+
+SELECT
+  *
+from
+  teatros
+order by
+  ST_Distance(
+    the_geom,
+    ST_GeomFromText(
+      'POINT(-58.38145 -34.60368)'
+      , 4326
+    )
+  )
+limit 150
+
+http://www.gistutor.com/postgresqlpostgis/6-advanced-postgresqlpostgis-tutorials/58-postgis-buffer-latlong-and-other-projections-using-meters-units-custom-stbuffermeters-function.html
+
+un circulo de 500 metros de diametro
+alrededor del obelisco
+
+SELECT
+1 as cartodb_id,
+ST_Buffer(
+  ST_Transform(
+    ST_GeomFromText(
+      'POINT(-58.38145 -34.60368)', 4326
+    )
+    , 3857
+  )
+  , 500
+) as the_geom_webmercator
+
+los teatros a 250 metros del obelisco
+
+SELECT
+  *
+from
+  teatros
+where
+ST_Within(
+  the_geom_webmercator,
+  ST_Buffer(
+    ST_Transform(
+      ST_GeomFromText(
+        'POINT(-58.38145 -34.60368)', 4326
+      )
+      , 3857
+    )
+    , 500
+  )
+)
+
+
+
+crear tu mapa
+
+geojson.io
+
+
+importar geojson
+
+agregar un layer
+
+SELECT
+  *,
+  (
+    select count(*)
+    from teatros
+    where ST_Within(teatros.the_geom, caba.the_geom)
+  ) as teatros
+
+FROM caba
+
+
+web service API
+
+mapa-cultural
+
+select
+  tipo, subtipo, nombre, direccion, telefono, email, web, lat, lon
+from
+  cultura
+where
+  (
+    ST_Within(
+      the_geom,
+      ST_Envelope(
+        ST_GeomFromText(
+          'LINESTRING( -58.89147971858635 -34.340247534509786, -58.11909462223395 -34.87825876285646 )', 4326
+        )
+      )
+    )
+  ) and (
+    (lower(subtipo) in ('salas de cine', 'espacios incaa', 'salas teatrales'))
+  )
