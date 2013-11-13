@@ -43,7 +43,7 @@ teatros.csv
 
 sql
 
-SELECT * FROM teatros
+SELECT * from teatros
 where nombre ilike '%colon%'
 
 Aprendiendo PostGIS
@@ -75,7 +75,7 @@ from test
 
 vemos el campo
 
-SELECT
+select
 1 as cartodb_id,
 'Obelisco' as nombre,
 ST_Transform(
@@ -87,9 +87,9 @@ ST_Transform(
 ) as the_geom_webmercator
 
 
-SELECT
+select
 1 as cartodb_id,
-'Obelisco' as nombre,
+'Mi poligono' as nombre,
 ST_Transform(
   ST_GeomFromText(
     'POLYGON((
@@ -107,7 +107,7 @@ http://workshops.boundlessgeo.com/postgis-intro/knn.html
 
 los 150 teatros más cercanos al obelisco
 
-SELECT
+select
   *
 from
   teatros
@@ -126,7 +126,7 @@ http://www.gistutor.com/postgresqlpostgis/6-advanced-postgresqlpostgis-tutorials
 un circulo de 500 metros de diametro
 alrededor del obelisco
 
-SELECT
+select
 1 as cartodb_id,
 ST_Buffer(
   ST_Transform(
@@ -140,7 +140,7 @@ ST_Buffer(
 
 los teatros a 250 metros del obelisco
 
-SELECT
+select
   *
 from
   teatros
@@ -169,7 +169,7 @@ importar geojson
 
 agregar un layer
 
-SELECT
+select
   *,
   (
     select count(*)
@@ -177,7 +177,7 @@ SELECT
     where ST_Within(teatros.the_geom, caba.the_geom)
   ) as teatros
 
-FROM caba
+from caba
 
 
 web service API
@@ -194,7 +194,10 @@ where
       the_geom,
       ST_Envelope(
         ST_GeomFromText(
-          'LINESTRING( -58.89147971858635 -34.340247534509786, -58.11909462223395 -34.87825876285646 )', 4326
+          'LINESTRING(
+            -58.89147971858635 -34.340247534509786,
+            -58.11909462223395 -34.87825876285646
+          )', 4326
         )
       )
     )
