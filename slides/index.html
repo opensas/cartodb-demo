@@ -61,7 +61,7 @@
           <h2>Más precisamente</h2>
           <ul>
             <li class="fragment">Una interfaz de usuario web para subir, crear, editar, vizualizar y exportar información geoespacial</li>
-            <li class="fragment">Una servidor de base de datos geoespacial basado en PostgreSQL y PostGIS 2.0</li>
+            <li class="fragment">Un servidor de base de datos geoespacial basado en PostgreSQL y PostGIS 2.0</li>
             <li class="fragment">Un web service REST que soporta consultas de SQL y PostGIS y retorna GeoJSON</li>
             <li class="fragment">Un servicio pago para guardar tus bases de datos geoespaciales en la nube</li>
             <li class="fragment">o la posibilidad de instalarlo en tu propio servidor</li>
@@ -80,16 +80,18 @@
 
         <section>
           <h2>Es software libre...</h2>
-          <h2 class="fragment">hecho con software libre</h2>
-          <ul class="fragment">
-            <li>Ubuntu</li>
-            <li>PostgreSQL 9.1.x</li>
-            <li>PostGIS 2.0</li>
-            <li>Redis</li>
-            <li>Ruby</li>
-            <li>NodeJS</li>
-            <li>Varnish</li>
-          </ul>
+          <div class="fragment">
+            <h2>hecho con software libre</h2>
+            <ul>
+              <li>Ubuntu</li>
+              <li>PostgreSQL 9.1.x</li>
+              <li>PostGIS 2.0</li>
+              <li>Redis</li>
+              <li>Ruby</li>
+              <li>NodeJS</li>
+              <li>Varnish</li>
+            </ul>
+          </div>
         </section>
 
         <section>
@@ -282,6 +284,33 @@ ST_Buffer(
 
         <section>
           <h2>Magia negra con PostGIS</h2>
+          <h3>Entendiendo ST_Buffer</h3>
+          <pre><code data-trim contenteditable>
+select
+1 as cartodb_id,
+ST_Buffer(
+  ST_Transform(
+    ST_GeomFromText('POLYGON((
+      -58.38145 -34.60368, -58.48145 -34.60368, -58.48145 -34.70368, -58.38145 -34.60368
+    ))', 4326)
+    , 3857
+  )
+  , 1500) as the_geom_webmercator
+union
+select
+2 as cartodb_id,
+  ST_Transform(
+    ST_GeomFromText('POLYGON((
+      -58.38145 -34.60368, -58.48145 -34.60368, -58.48145 -34.70368, -58.38145 -34.60368
+    ))', 4326)
+    , 3857
+  ) as the_geom_webmercator
+</code></pre>
+        </section>
+
+
+        <section>
+          <h2>Magia negra con PostGIS</h2>
           <h3>Los teatros a 250 metros del obelisco</h3>
           <pre><code data-trim contenteditable>
 select
@@ -343,7 +372,7 @@ from caba
           <br />
           <h3>Vamos a ver...</h3>
           <ul class="fragment">
-            <li>Acceder a nuestra información vía web service</li>
+            <li>Acceder a nuestra información vía <a href="https://agendadigital.cartodb.com/api/v2/sql?q=select%20*%20from%20teatros%20limit%205">web service</a></li>
             <li>Nuestros datos como json</li>
             <li>Una <a href="http://www.nardoz.com/mapa-cultura">aplicación</a> completa</li>
             <li>Una consulta compleja</li>
