@@ -5,7 +5,7 @@ Demo de CartoDB para la PgDay 2013 en Buenos Aires.
 
 Repositorio en github: https://github.com/opensas/cartodb-demo
 
-Slides: opensas.github.io/cartodb-demo
+Slides: http://opensas.github.io/cartodb-demo
 
 Demo en youtube: www.youtube.com/watch?v=pErvtxeYmcg
 
