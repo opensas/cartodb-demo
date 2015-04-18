@@ -1,0 +1,157 @@
+explicacion de proyecciones
+
+http://www.gaia-gis.it/gaia-sins/spatialite-cookbook/html/srid.html
+
+--
+
+http://gis.stackexchange.com/a/44481/19461
+
+--
+
+my question: http://gis.stackexchange.com/questions/77688/postgis-get-the-points-that-are-x-meters-near-another-point-in-meters
+
+--
+
+ST_Buffer_Meters function
+
+http://www.gistutor.com/postgresqlpostgis/6-advanced-postgresqlpostgis-tutorials/58-postgis-buffer-latlong-and-other-projections-using-meters-units-custom-stbuffermeters-function.html
+
+select
+1 as cartodb_id,
+
+ST_Transform(
+  ST_Buffer(
+    ST_Transform(
+      ST_GeomFromText(
+        'POINT(-58.427185 -34.624592)'
+        , 4326
+      )
+      , 31997
+    )
+    , 2000
+  ), 3857
+)
+
+
+as the_geom_webmercator
+
+select
+1 as cartodb_id,
+
+  ST_Distance(
+    ST_Transform(
+      ST_GeomFromText(
+        'POINT(-58.427185 -34.624592)'
+        , 4326
+      )
+      , 31997
+    ),
+
+    ST_Transform(
+      ST_GeomFromText(
+        'POINT(-58.425704 -34.631195)'
+        , 4326
+      )
+      , 31997
+    )
+  )
+
+as the_distance
+
+--
+
+un ejemplo:
+
+select
+1 as cartodb_id,
+ST_Buffer(
+  ST_Transform(
+    ST_GeomFromText(
+      'POINT(-58.427185 -34.624592)'
+      , 4326
+    )
+    , 3857
+  )
+  , 500
+) as the_geom_webmercator
+
+    select
+    1 as cartodb_id,
+    ST_Transform(
+      ST_Buffer(
+        ST_Transform(
+          ST_GeomFromText(
+            'POINT(-58.427185 -34.624592)'
+            , 4326
+          )
+          , 31997
+        )
+        , 2000
+      ), 3857
+    ) as the_geom_webmercator
+
+    750 m
+
+    -34.624592,-58.427185
+    -34.631195,-58.425704
+
+POINT(-58.427185 -34.624592)
+
+POINT(-58.425704 -34.631195)
+
+tres maneras de calcular el area
+
+-- usando webmercator (se queda corto)
+select
+1 as cartodb_id, '1' as nombre,
+ST_Buffer(
+  ST_Transform(
+    ST_GeomFromText(
+      'POINT(-58.427185 -34.624592)'
+      , 4326
+    )
+    , 3857
+  )
+  , 1700
+) as the_geom_webmercator
+union
+
+-- usando la funcion ST_Buffer_Meters
+select
+2 as cartodb_id, '2' as nombre,
+ST_Transform(
+  ST_Buffer_Meters(
+    ST_GeomFromText(
+      'POINT(-58.427185 -34.624592)'
+      , 4326
+    )
+    , 1700
+  )
+  , 3857
+) as the_geom_webmercator
+union
+
+-- usando el SRID 31997
+select
+3 as cartodb_id, '3' as nombre,
+ST_Transform(
+  ST_Buffer(
+    ST_Transform(
+      ST_GeomFromText(
+        'POINT(-58.427185 -34.624592)'
+        , 4326
+      )
+      , 31997
+    )
+    , 1700
+  ), 3857
+) as the_geom_webmercator
+
+select
+utmzone(
+    ST_GeomFromText(
+      'POINT(-58.427185 -34.624592)'
+      , 4326
+    )
+) as srid
+--> 32721 (el srid para ese punto para poder calcular distancias en metros)
